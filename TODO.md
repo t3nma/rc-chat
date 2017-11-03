@@ -14,7 +14,7 @@
 - [ ] Answer **ERROR**
 - [ ] Answer **MESSAGE**
 - [ ] Answer **NEWNICK**
-- [ ] Answer **JOINED
+- [ ] Answer **JOINED**
 - [ ] Answer **LEFT**
 - [ ] Answer **BYE**
 - [ ] Handle client state (**init**, **outside**, **inside**)

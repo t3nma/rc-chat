@@ -8,7 +8,7 @@
 - [ ] Handle command **/join room**
 - [ ] Handle command **/leave**
 - [ ] Handle command **/bye**
-- [ ] Destnguish client commands from simple messages
+- [ ] Destinguish client commands from simple messages
 - [ ] Escape simple messages starting with one or more **/**
 - [ ] Answer **OK**
 - [ ] Answer **ERROR**

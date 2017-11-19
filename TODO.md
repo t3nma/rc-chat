@@ -2,7 +2,7 @@
 
 ## Server (ChatServer.java)
 
-- [ ] Accept server port as argument from the cmd
+- [X] Accept server port as argument from the cmd
 - [ ] Deal with message deliniation
 - [ ] Handle command **/nick name**
 - [ ] Handle command **/join room**
@@ -23,8 +23,8 @@
 
 ## Client (ChatClient.java)
 
-- [ ] Accept DNS name and server port as arguments from the cmd
-- [ ] Implement 2 thread system (listen server and user input)
+- [X] Accept DNS name and server port as arguments from the cmd
+- [X] Implement 2 thread system (listen server and user input)
 - [ ] Support friendly message display in the chat area
 
 

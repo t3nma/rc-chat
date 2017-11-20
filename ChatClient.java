@@ -47,7 +47,7 @@ public class ChatClient
             public void actionPerformed(ActionEvent e)
 	    {
                 try {
-		    System.out.println("@ actionPerformed(AE e)");
+		    System.out.println("Sending msg: " + chatBox.getText());
 		    newMessage(chatBox.getText());
                 } catch (IOException ex) {
                 } finally {
@@ -92,16 +92,18 @@ public class ChatClient
 
 
     private class HSocListener implements Runnable
-    {
+    {	
 	public HSocListener() { }
 
 	public void run()
 	{
 	    try
 	    {
+		BufferedReader inFromServer;
+		
 		while(true)
 		{
-		    BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSoc.getInputStream()));
+		    inFromServer = new BufferedReader(new InputStreamReader(clientSoc.getInputStream()));
 		    String msg = inFromServer.readLine();
 		    System.out.println("Received: " + msg);
 		    if( msg.equals("ok") )

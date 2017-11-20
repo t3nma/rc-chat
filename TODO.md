@@ -3,7 +3,7 @@
 ## Server (ChatServer.java)
 
 - [X] Accept server port as argument from the cmd
-- [ ] Deal with message deliniation
+- [X] Deal with message deliniation
 - [ ] Handle command **/nick name**
 - [ ] Handle command **/join room**
 - [ ] Handle command **/leave**
@@ -27,7 +27,6 @@
 - [X] Implement 2 thread system (listen server and user input)
 - [ ] Support friendly message display in the chat area
 
-
 ### Notes
 
 * Each message client->server and server->client must end \n (the message itself mustn't contain \n)
@@ -35,3 +34,7 @@
 * Include all .java files (in case of code separation)
 * ONE member submission in moodle
 * É PARA O 20 C*RALHO!
+
+### Questions
+
+* who should escape messages with multiple '////' when the user is in a room? The user|server|nevermid ?

@@ -16,9 +16,12 @@ public class ChatClient
 
     
     private String serverIP;
-    private int serverPort;
-    private Socket clientSoc;
-    
+    private int server_port;
+    private Socket client_soc;
+
+    private boolean pending_join;
+    private boolean pending_leave;
+    private boolean inside;
     
     /* Append message in chat area */
     public void printMessage(final String message)
@@ -27,7 +30,7 @@ public class ChatClient
     }
 
     
-    public ChatClient(String serverName, int serverPort) throws Exception
+    public ChatClient(String server_name, int server_port) throws Exception
     {
 	// build UI
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -47,7 +50,6 @@ public class ChatClient
             public void actionPerformed(ActionEvent e)
 	    {
                 try {
-		    System.out.println("Sending msg: " + chatBox.getText());
 		    newMessage(chatBox.getText());
                 } catch (IOException ex) {
                 } finally {
@@ -57,15 +59,33 @@ public class ChatClient
         });
 
 	// save server IP (addr from DNS name) and port
-	serverIP = (InetAddress.getByName(serverName)).getHostAddress();
-	this.serverPort = serverPort;
+	serverIP = (InetAddress.getByName(server_name)).getHostAddress();
+	this.server_port = server_port;
+
+	pending_join = pending_leave = inside = false;
     }
 
     
     /* action performed after user input in text box */
     public void newMessage(String message) throws IOException
     {
-	DataOutputStream outToserver = new DataOutputStream(clientSoc.getOutputStream());
+	message = message.trim();
+	String cmd = message.split(" ")[0];
+	
+	// is client inside a room ?
+	if(inside)
+	{
+	    if(!cmd.matches("^/(join|nick|leave|bye)$") && cmd.startsWith("/"))
+		message = "/" + message; // escape normal message starting with /
+	}
+	else if(cmd.equals("/join"))
+	    pending_join = true;
+	else if(cmd.equals("/leave"))
+	    pending_leave = true;
+
+	System.out.println("TRYING TO SEND: " + message);
+	
+	DataOutputStream outToserver = new DataOutputStream(client_soc.getOutputStream());
 	outToserver.writeBytes(message + "\n");
     }
 
@@ -73,20 +93,7 @@ public class ChatClient
     /* object's main method */
     public void run() throws Exception
     {
-	/* WRITE
-	DataOutputStream outToServer = new DataOutputStream(soc.getOutputStream());
-	BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-	outToServer.writeBytes(inFromUser.readLine() + "\n");
-	soc.close();
-	*/
-
-	/* READ
-	BufferedReader inFromServer = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-	String msg = inFromServer.readLine();
-	System.out.println("Msg: " + msg);
-	soc.close();*/
-
-	clientSoc = new Socket(serverIP,serverPort);
+	client_soc = new Socket(serverIP,server_port);
 	new Thread(new HSocListener()).start();
     }    
 
@@ -100,17 +107,31 @@ public class ChatClient
 	    try
 	    {
 		BufferedReader inFromServer;
+		boolean alive = true;
 		
-		while(true)
+		while(alive)
 		{
-		    inFromServer = new BufferedReader(new InputStreamReader(clientSoc.getInputStream()));
-		    String msg = inFromServer.readLine();
-		    System.out.println("Received: " + msg);
-		    if( msg.equals("ok") )
-			break;
+		    inFromServer = new BufferedReader(new InputStreamReader(client_soc.getInputStream()));
+		    String msg = inFromServer.readLine() + "\n"; // readLine() removes end of line
+
+		    printMessage(msg);
+		    
+		    if(pending_join && msg.equals(ChatServer.ANS_OK))
+		    {
+			inside = true;
+			pending_join = false;
+		    }
+		    else if(pending_leave && msg.equals(ChatServer.ANS_OK))
+		    {
+			inside = false;
+			pending_leave = false;
+		    }
+		    else if(msg.equals(ChatServer.ANS_BYE))
+			alive = false;
 		}
 
-		clientSoc.close();
+		client_soc.close();
+		// System.exit(0);
 	    }
 	    catch(Exception e)
 	    {

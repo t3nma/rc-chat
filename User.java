@@ -6,7 +6,7 @@ public class User
     private State state;
     private String name;
     private String room;
-    private ByteBuffer buffer;
+    private String buffer;
 
     static enum State
     {
@@ -17,10 +17,10 @@ public class User
     
     User()
     {
-	state = State.INIT;
-	name = null;
-	room = null;
-	buffer = ByteBuffer.allocate(ChatServer.BUFFER_SIZE);
+	state  = State.INIT;
+	name   = null;
+	room   = null;
+	buffer = "";
     }
 
     State getState()
@@ -53,26 +53,15 @@ public class User
 	this.room = room;
     }
 
-    void appendToBuffer(String msg)
+    void cacheMessage(String msg)
     {
-	buffer.put(msg.getBytes());
+	buffer += msg;
     }
 
     String getFullMessage()
     {
-	buffer.flip(); // switch to read mode
-
-	byte[] bytes;
-	if(buffer.hasArray())
-	    bytes = buffer.array();
-	else
-	{
-	    bytes = new byte[buffer.remaining()];
-	    buffer.get(bytes);
-	}
-	
-	buffer.clear(); // prepare for next write mode
-	
-	return new String(bytes, Charset.forName("UTF8"));
+	String r = buffer;
+	buffer = "";
+	return r;
     }
 }

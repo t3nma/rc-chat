@@ -4,20 +4,20 @@
 
 - [X] Accept server port as argument from the cmd
 - [X] Deal with message deliniation
-- [ ] Handle command **/nick name**
-- [ ] Handle command **/join room**
-- [ ] Handle command **/leave**
-- [ ] Handle command **/bye**
-- [ ] Destinguish client commands from simple messages
-- [ ] Escape simple messages starting with one or more **/**
-- [ ] Answer **OK**
-- [ ] Answer **ERROR**
-- [ ] Answer **MESSAGE**
-- [ ] Answer **NEWNICK**
-- [ ] Answer **JOINED**
-- [ ] Answer **LEFT**
-- [ ] Answer **BYE**
-- [ ] Handle client state (**init**, **outside**, **inside**)
+- [X] Handle command **/nick name**
+- [X] Handle command **/join room**
+- [X] Handle command **/leave**
+- [X] Handle command **/bye**
+- [X] Destinguish client commands from simple messages
+- [X] Escape simple messages starting with one or more **/**
+- [X] Answer **OK**
+- [X] Answer **ERROR**
+- [X] Answer **MESSAGE**
+- [X] Answer **NEWNICK**
+- [X] Answer **JOINED**
+- [X] Answer **LEFT**
+- [X] Answer **BYE**
+- [X] Handle client state (**init**, **outside**, **inside**)
 - [ ] Handle command **/priv**
 - [ ] Answer **PRIVATE**
 
@@ -26,6 +26,11 @@
 - [X] Accept DNS name and server port as arguments from the cmd
 - [X] Implement 2 thread system (listen server and user input)
 - [ ] Support friendly message display in the chat area
+
+## General
+
+- [ ] Test message deliniation with ncat
+- [ ] Use wireshark to test protocol correctness
 
 ### Notes
 
@@ -38,3 +43,7 @@
 ### Questions
 
 * who should escape messages with multiple '////' when the user is in a room? The user|server|nevermid ?
+* should commands like "/bye ola ola2" be handled like "/bye" ?
+* usar system.exit(0) para sair do cliente ?
+* does the message sender also receives the message (inside a room?)
+* ISO-8859-1 ???

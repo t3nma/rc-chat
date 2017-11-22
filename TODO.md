@@ -47,3 +47,4 @@
 * usar system.exit(0) para sair do cliente ?
 * does the message sender also receives the message (inside a room?)
 * ISO-8859-1 ???
+* can trim() user request ?!

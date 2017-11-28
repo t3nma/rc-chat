@@ -14,14 +14,9 @@ public class ChatClient
     private JTextArea chatArea = new JTextArea();
     /* -- UI vars */
 
-    
     private String serverIP;
     private int server_port;
     private Socket client_soc;
-
-    private boolean pending_join;
-    private boolean pending_leave;
-    private boolean inside;
     
     /* Append message in chat area */
     public void printMessage(final String message)
@@ -61,8 +56,6 @@ public class ChatClient
 	// save server IP (addr from DNS name) and port
 	serverIP = (InetAddress.getByName(server_name)).getHostAddress();
 	this.server_port = server_port;
-
-	pending_join = pending_leave = inside = false;
     }
 
     
@@ -70,21 +63,7 @@ public class ChatClient
     public void newMessage(String message) throws IOException
     {
 	message = message.trim();
-	String cmd = message.split(" ")[0];
-	
-	// is client inside a room ?
-	if(inside)
-	{
-	    if(!cmd.matches("^/(join|nick|leave|bye)$") && cmd.startsWith("/"))
-		message = "/" + message; // escape normal message starting with /
-	}
-	else if(cmd.equals("/join"))
-	    pending_join = true;
-	else if(cmd.equals("/leave"))
-	    pending_leave = true;
-
 	System.out.println("TRYING TO SEND: " + message);
-	
 	DataOutputStream outToserver = new DataOutputStream(client_soc.getOutputStream());
 	outToserver.writeBytes(message + "\n");
     }
@@ -116,17 +95,7 @@ public class ChatClient
 
 		    printMessage(msg);
 		    
-		    if(pending_join && msg.equals(ChatServer.ANS_OK))
-		    {
-			inside = true;
-			pending_join = false;
-		    }
-		    else if(pending_leave && msg.equals(ChatServer.ANS_OK))
-		    {
-			inside = false;
-			pending_leave = false;
-		    }
-		    else if(msg.equals(ChatServer.ANS_BYE))
+		    if(msg.equals(ChatServer.ANS_BYE))
 			alive = false;
 		}
 

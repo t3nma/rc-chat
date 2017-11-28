@@ -7,7 +7,7 @@ import java.util.*;
 
 public class ChatServer
 {
-    static final public int BUFFER_SIZE             = 20000;
+    static final private int BUFFER_SIZE             = 20000;
 
     static final public String ANS_OK               = "OK\n";
     static final public String ANS_ERROR            = "ERROR\n";
@@ -236,8 +236,8 @@ public class ChatServer
 	    }
 	    else
 	    {
-		if(msg.startsWith("/"))
-		    msg = msg.substring(1);
+		if(msg.startsWith("//"))
+		    msg = msg.substring(1); // escape first /
 
 		String room_msg = ANS_PATTERN_MESSAGE.replace("[name]", user.getName()).replace("[message]", msg);
 		sv_answer_room(user.getRoom(), room_msg, user.getName());

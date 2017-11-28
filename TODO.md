@@ -42,9 +42,10 @@
 
 ### Questions
 
-* who should escape messages with multiple '////' when the user is in a room? The user|server|nevermid ?
+* Client send raw messsages, Server concers about escaping, right?
+* escape happens when the message starts with a minimum of two '/', right?
 * should commands like "/bye ola ola2" be handled like "/bye" ?
-* usar system.exit(0) para sair do cliente ?
+* can we user System.exit(0) to exit the client on close ?
 * does the message sender also receives the message (inside a room?)
 * ISO-8859-1 ???
 * can trim() user request ?!

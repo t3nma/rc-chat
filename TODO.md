@@ -18,8 +18,8 @@
 - [X] Answer **LEFT**
 - [X] Answer **BYE**
 - [X] Handle client state (**init**, **outside**, **inside**)
-- [ ] Handle command **/priv**
-- [ ] Answer **PRIVATE**
+- [X] Handle command **/priv**
+- [X] Answer **PRIVATE**
 
 ## Client (ChatClient.java)
 
@@ -49,3 +49,5 @@
 * does the message sender also receives the message (inside a room?)
 * ISO-8859-1 ???
 * can trim() user request ?!
+* command /priv only available for inside users, inside-outside, outside-outside?
+* in command "/priv name someMessage", does someMessage can have spaces?

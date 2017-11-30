@@ -17,6 +17,7 @@ public class ChatServer
     static final private String ANS_PATTERN_NEWNICK = "NEWNICK [old] [new]\n";
     static final private String ANS_PATTERN_JOINED  = "JOINED [name]\n";
     static final private String ANS_PATTERN_LEFT    = "LEFT [name]\n";
+    static final private String ANS_PATTERN_PRIVATE = "PRIVATE [name] [message]\n";
 
     static private HashSet<String> nameset          = null;
     static private ServerSocketChannel ssc          = null;
@@ -112,7 +113,7 @@ public class ChatServer
 
     /**
      *
-     *
+     * currently need handling of /priv command.
      *
      **/
     static private void sv_process_read(SelectionKey key, SocketChannel sc) throws Exception
@@ -184,6 +185,24 @@ public class ChatServer
 		user.setState(User.State.INSIDE);
 		sv_answer(ANS_OK, sc);
 	    }
+	    else if( msg_tokens[0].equals("/priv") && msg_tokens.length > 2 )
+	    {
+		String receiver = msg_tokens[1];
+		
+		if( !nameset.contains(receiver) )
+		    sv_answer(ANS_ERROR, sc); // receiver doesn't exist, throw error to sender
+		else
+		{
+		    /* 
+		     * NEED TO CHANGE THIS CODE,
+		     * REPLACE SINGLE TOKEN MESSAGE TO FULL MESSAGE
+		     */
+
+		    String priv_msg = ANS_PATTERN_PRIVATE.replace("[name]", user.getName()).replace("[message]", msg_tokens[2]);
+		    sv_answer_priv(priv_msg, receiver);
+		    sv_answer(ANS_OK, sc);
+		}
+	    }
 	    else if( msg_tokens[0].equals("/bye") )
 	    {
 		sv_answer(ANS_BYE, sc);
@@ -218,6 +237,24 @@ public class ChatServer
 		room_msg = ANS_PATTERN_JOINED.replace("[name]", user.getName());
 		sv_answer_room(user.getRoom(), room_msg, user.getName());
 		sv_answer(ANS_OK, sc);
+	    }
+	    else if( msg_tokens[0].equals("/priv") && msg_tokens.length > 2)
+	    {
+		String receiver = msg_tokens[1];
+		
+		if( !nameset.contains(receiver) )
+		    sv_answer(ANS_ERROR, sc); // receiver doesn't exist, throw error to sender
+		else
+		{
+		    /* 
+		     * NEED TO CHANGE THIS CODE,
+		     * REPLACE SINGLE TOKEN MESSAGE TO FULL MESSAGE
+		     */
+
+		    String priv_msg = ANS_PATTERN_PRIVATE.replace("[name]", user.getName()).replace("[message]", msg_tokens[2]);
+		    sv_answer_priv(priv_msg, receiver);
+		    sv_answer(ANS_OK, sc);
+		}
 	    }
 	    else if( msg_tokens[0].equals("/leave") )
 	    {
@@ -272,7 +309,8 @@ public class ChatServer
 
     /**
      *
-     *
+     * Send message "msg" to the user identified by
+     * the SocketChannel "sc"
      *
      **/
     static private void sv_answer(String msg, SocketChannel sc) throws Exception
@@ -287,7 +325,8 @@ public class ChatServer
 
     /**
      *
-     *
+     * Send message "msg" to all users inside room "room".
+     * Currently ignoring user who sendes the message.
      *
      **/
     static private void sv_answer_room(String room, String msg, String from) throws Exception
@@ -309,10 +348,33 @@ public class ChatServer
 	    sv_answer(msg,sc);
 	}
     }
+
+    /**
+     *
+     * Send private message "msg" to user "to".
+     *
+     **/
+    static private void sv_answer_priv(String msg, String to) throws Exception
+    {
+	Iterator<SelectionKey> it = selector.keys().iterator();
+
+	while(it.hasNext())
+	{
+	    SelectionKey cur_key = it.next();
+
+	    User user = (User)cur_key.attachment();
+	    if( user == null || !user.getName().equals(to) )
+		continue;
+
+	    SocketChannel sc = (SocketChannel)cur_key.channel();
+	    sv_answer(msg,sc);
+	    break;
+	}
+    }
     
     /**
      *
-     * Close channel connection
+     * Close channel "sc"'s connection
      *
      **/
     static private void close_connection(SelectionKey key, SocketChannel sc) throws Exception

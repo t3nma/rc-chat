@@ -125,7 +125,7 @@ public class ChatServer
 	if(msg == null)
 	{
 	    if(user.getState() == User.State.INSIDE)
-		sv_answer_room(user.getRoom(), ANS_PATTERN_LEFT.replace("[name]",user.getName()), user.getName());
+		sv_answer_room(user.getRoom(), ANS_PATTERN_LEFT.replace("[name]",user.getName()), user.getName(), false);
 
 	    close_connection(key,sc);
 	    return;
@@ -180,7 +180,7 @@ public class ChatServer
 	    else if( msg_tokens[0].equals("/join") && msg_tokens.length > 1 )
 	    {
 		String room_msg = ANS_PATTERN_JOINED.replace("[name]",user.getName());
-		sv_answer_room(msg_tokens[1], room_msg, user.getName());
+		sv_answer_room(msg_tokens[1], room_msg, user.getName(), false);
 		user.setRoom(msg_tokens[1]);
 		user.setState(User.State.INSIDE);
 		sv_answer(ANS_OK, sc);
@@ -193,12 +193,8 @@ public class ChatServer
 		    sv_answer(ANS_ERROR, sc); // receiver doesn't exist, throw error to sender
 		else
 		{
-		    /* 
-		     * NEED TO CHANGE THIS CODE,
-		     * REPLACE SINGLE TOKEN MESSAGE TO FULL MESSAGE
-		     */
-
-		    String priv_msg = ANS_PATTERN_PRIVATE.replace("[name]", user.getName()).replace("[message]", msg_tokens[2]);
+		    msg = msg.substring(msg.indexOf(msg_tokens[2]));
+		    String priv_msg = ANS_PATTERN_PRIVATE.replace("[name]", user.getName()).replace("[message]", msg);
 		    sv_answer_priv(priv_msg, receiver);
 		    sv_answer(ANS_OK, sc);
 		}
@@ -222,7 +218,7 @@ public class ChatServer
 		else
 		{
 		    String room_msg = ANS_PATTERN_NEWNICK.replace("[old]",user.getName()).replace("[new]",msg_tokens[1]);
-		    sv_answer_room(user.getRoom(), room_msg, user.getName());
+		    sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
 		    sv_answer(ANS_OK, sc);
 		    nameset.remove(user.getName());
 		    nameset.add(msg_tokens[1]);
@@ -232,10 +228,10 @@ public class ChatServer
 	    else if( msg_tokens[0].equals("/join") && msg_tokens.length > 1 )
 	    {
 		String room_msg = ANS_PATTERN_LEFT.replace("[name]", user.getName());
-		sv_answer_room(user.getRoom(), room_msg, user.getName());
+		sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
 		user.setRoom(msg_tokens[1]);
 		room_msg = ANS_PATTERN_JOINED.replace("[name]", user.getName());
-		sv_answer_room(user.getRoom(), room_msg, user.getName());
+		sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
 		sv_answer(ANS_OK, sc);
 	    }
 	    else if( msg_tokens[0].equals("/priv") && msg_tokens.length > 2)
@@ -246,12 +242,8 @@ public class ChatServer
 		    sv_answer(ANS_ERROR, sc); // receiver doesn't exist, throw error to sender
 		else
 		{
-		    /* 
-		     * NEED TO CHANGE THIS CODE,
-		     * REPLACE SINGLE TOKEN MESSAGE TO FULL MESSAGE
-		     */
-
-		    String priv_msg = ANS_PATTERN_PRIVATE.replace("[name]", user.getName()).replace("[message]", msg_tokens[2]);
+		    msg = msg.substring(msg.indexOf(msg_tokens[2]));
+		    String priv_msg = ANS_PATTERN_PRIVATE.replace("[name]", user.getName()).replace("[message]", msg);
 		    sv_answer_priv(priv_msg, receiver);
 		    sv_answer(ANS_OK, sc);
 		}
@@ -259,14 +251,14 @@ public class ChatServer
 	    else if( msg_tokens[0].equals("/leave") )
 	    {
 		String room_msg = ANS_PATTERN_LEFT.replace("[name]", user.getName());
-		sv_answer_room(user.getRoom(), room_msg, user.getName());
+		sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
 		user.setState(User.State.OUTSIDE);
 		sv_answer(ANS_OK, sc);
 	    }
 	    else if( msg_tokens[0].equals("/bye") )
 	    {
 		String room_msg = ANS_PATTERN_LEFT.replace("[name]", user.getName());
-		sv_answer_room(user.getRoom(), room_msg, user.getName());
+		sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
 		sv_answer(ANS_BYE, sc);
 		nameset.remove(user.getName());
 		close_connection(key, sc);
@@ -277,8 +269,7 @@ public class ChatServer
 		    msg = msg.substring(1); // escape first /
 
 		String room_msg = ANS_PATTERN_MESSAGE.replace("[name]", user.getName()).replace("[message]", msg);
-		sv_answer_room(user.getRoom(), room_msg, user.getName());
-		sv_answer(room_msg, sc);
+		sv_answer_room(user.getRoom(), room_msg, user.getName(), true);
 	    }
 	    
 	    break;
@@ -326,10 +317,9 @@ public class ChatServer
     /**
      *
      * Send message "msg" to all users inside room "room".
-     * Currently ignoring user who sendes the message.
      *
      **/
-    static private void sv_answer_room(String room, String msg, String from) throws Exception
+    static private void sv_answer_room(String room, String msg, String from, boolean ans_self) throws Exception
     {
 	Iterator<SelectionKey> it = selector.keys().iterator();
 
@@ -338,10 +328,10 @@ public class ChatServer
 	    SelectionKey cur_key = it.next();
 
 	    User user = (User)cur_key.attachment();
-	    if(user == null                         ||
-	       user.getState() != User.State.INSIDE ||
-	       user.getName().equals(from)          ||
-	       !user.getRoom().equals(room) )
+	    if(user == null                                 ||
+	       user.getState() != User.State.INSIDE         ||
+	       !user.getRoom().equals(room)                 ||
+	       (user.getName().equals(from) && !ans_self))
 		continue;
 	    
 	    SocketChannel sc = (SocketChannel)cur_key.channel();

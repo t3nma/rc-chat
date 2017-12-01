@@ -25,7 +25,7 @@
 
 - [X] Accept DNS name and server port as arguments from the cmd
 - [X] Implement 2 thread system (listen server and user input)
-- [ ] Support friendly message display in the chat area
+- [X] Support friendly message display in the chat area
 
 ## General
 
@@ -42,12 +42,5 @@
 
 ### Questions
 
-* Client send raw messsages, Server concers about escaping, right?
-* escape happens when the message starts with a minimum of two '/', right?
-* should commands like "/bye ola ola2" be handled like "/bye" ?
-* can we user System.exit(0) to exit the client on close ?
-* does the message sender also receives the message (inside a room?)
 * ISO-8859-1 ???
-* can trim() user request ?!
-* command /priv only available for inside users, inside-outside, outside-outside?
-* in command "/priv name someMessage", does someMessage can have spaces?
+- TRY UTF-8

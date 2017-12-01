@@ -19,9 +19,23 @@ public class ChatClient
     private Socket client_soc;
     
     /* Append message in chat area */
-    public void printMessage(final String message)
+    public void printMessage(String message)
     {
-        chatArea.append(message);
+	message = message.replace("\n","");
+	String[] tokens = message.split(" ");
+	
+	if(tokens[0].equals("MESSAGE"))
+	    message = tokens[1] + ": " + message.substring(message.indexOf(tokens[2]));
+	else if(tokens[0].equals("NEWNICK"))
+	    message = tokens[1] + " mudou de nome para " + tokens[2];
+	else if(tokens[0].equals("JOINED"))
+	    message = tokens[1] + " juntou-se á sala";
+	else if(tokens[0].equals("LEFT"))
+	    message = tokens[1] + " saiu da sala";
+	else if(tokens[0].equals("PRIVATE"))
+	    message = tokens[1] + ": " + message.substring(message.indexOf(tokens[2]));
+	
+        chatArea.append(message + "\n");
     }
 
     
@@ -93,14 +107,14 @@ public class ChatClient
 		    inFromServer = new BufferedReader(new InputStreamReader(client_soc.getInputStream()));
 		    String msg = inFromServer.readLine() + "\n"; // readLine() removes end of line
 
-		    printMessage(msg);
-		    
 		    if(msg.equals(ChatServer.ANS_BYE))
 			alive = false;
+
+		    printMessage(msg);
 		}
 
 		client_soc.close();
-		// System.exit(0);
+		System.exit(0);
 	    }
 	    catch(Exception e)
 	    {

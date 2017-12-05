@@ -23,6 +23,8 @@ public class ChatClient
     {
 	message = message.replace("\n","");
 	String[] tokens = message.split(" ");
+
+	System.out.println("BEFORE PRETTY FILTER: " + message);
 	
 	if(tokens[0].equals("MESSAGE"))
 	    message = tokens[1] + ": " + message.substring(message.indexOf(tokens[2]));
@@ -34,6 +36,8 @@ public class ChatClient
 	    message = tokens[1] + " saiu da sala";
 	else if(tokens[0].equals("PRIVATE"))
 	    message = tokens[1] + ": " + message.substring(message.indexOf(tokens[2]));
+
+	System.out.println("AFTER PRETTY FILTER: " + message);
 	
         chatArea.append(message + "\n");
     }
@@ -79,7 +83,7 @@ public class ChatClient
 	message = message.trim();
 	System.out.println("TRYING TO SEND: " + message);
 	DataOutputStream outToserver = new DataOutputStream(client_soc.getOutputStream());
-	outToserver.writeBytes(message + "\n");
+	outToserver.write((message + "\n").getBytes("UTF-8"));
     }
 
     

@@ -286,7 +286,7 @@ public class ChatServer
     static private String get_soc_message(SocketChannel sc) throws Exception
     {
 	ByteBuffer buffer      = ByteBuffer.allocate(BUFFER_SIZE);
-	CharsetDecoder decoder = (Charset.forName("ISO-8859-1")).newDecoder();
+	CharsetDecoder decoder = (Charset.forName("UTF-8")).newDecoder();
 
 	sc.read(buffer);
 	buffer.flip(); // switch to read mode
@@ -310,6 +310,8 @@ public class ChatServer
 	buffer.put(msg.getBytes("UTF-8"));
 	buffer.flip();
 
+	System.out.println("SENDING: " + msg);
+	
 	while(buffer.hasRemaining())
 	    sc.write(buffer);
     }

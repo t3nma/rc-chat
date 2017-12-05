@@ -29,6 +29,8 @@
 
 ## General
 
+- [X] Fix UTF-8
+- [ ] Fix pretty output, be careful with substringing and stuff
 - [ ] Test message deliniation with ncat
 - [ ] Use wireshark to test protocol correctness
 
@@ -39,8 +41,3 @@
 * Include all .java files (in case of code separation)
 * ONE member submission in moodle
 * É PARA O 20 C*RALHO!
-
-### Questions
-
-* ISO-8859-1 ???
-- TRY UTF-8

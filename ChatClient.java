@@ -23,11 +23,12 @@ public class ChatClient
     {
 	message = message.replace("\n","");
 	String[] tokens = message.split(" ");
-
-	System.out.println("BEFORE PRETTY FILTER: " + message);
 	
 	if(tokens[0].equals("MESSAGE"))
+	{
+	    message = message.replaceFirst("MESSAGE","").replaceFirst(tokens[1],"");
 	    message = tokens[1] + ": " + message.substring(message.indexOf(tokens[2]));
+	}
 	else if(tokens[0].equals("NEWNICK"))
 	    message = tokens[1] + " mudou de nome para " + tokens[2];
 	else if(tokens[0].equals("JOINED"))
@@ -35,10 +36,12 @@ public class ChatClient
 	else if(tokens[0].equals("LEFT"))
 	    message = tokens[1] + " saiu da sala";
 	else if(tokens[0].equals("PRIVATE"))
+	{
+	    message = message.replaceFirst("PRIVATE","").replaceFirst(tokens[1],"");
 	    message = tokens[1] + ": " + message.substring(message.indexOf(tokens[2]));
+	}
 
-	System.out.println("AFTER PRETTY FILTER: " + message);
-	
+	System.out.println("PRINTING: " + message);
         chatArea.append(message + "\n");
     }
 
@@ -81,7 +84,7 @@ public class ChatClient
     public void newMessage(String message) throws IOException
     {
 	message = message.trim();
-	System.out.println("TRYING TO SEND: " + message);
+	System.out.println("SENDING: " + message);
 	DataOutputStream outToserver = new DataOutputStream(client_soc.getOutputStream());
 	outToserver.write((message + "\n").getBytes("UTF-8"));
     }
@@ -110,13 +113,15 @@ public class ChatClient
 		{
 		    inFromServer = new BufferedReader(new InputStreamReader(client_soc.getInputStream()));
 		    String msg = inFromServer.readLine() + "\n"; // readLine() removes end of line
-
+		    System.out.println("RECEIVED: " + msg);
+		    
 		    if(msg.equals(ChatServer.ANS_BYE))
 			alive = false;
-
+		    
 		    printMessage(msg);
 		}
 
+		System.out.println("EXITING!");
 		client_soc.close();
 		System.exit(0);
 	    }

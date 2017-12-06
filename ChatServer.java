@@ -87,6 +87,7 @@ public class ChatServer
 		if( key.isAcceptable() )
 	        {
 		    // OP_ACCEPT
+		    System.out.println("ACCEPTING NEW CLIENT");
 		    Socket s = ssc.socket().accept();
 		    SocketChannel sc = s.getChannel();
 		    sc.configureBlocking(false);
@@ -100,7 +101,8 @@ public class ChatServer
 		    // no User object associated ?
 		    if(key.attachment() == null)
 			key.attach(new User());
-		    
+
+		    System.out.println("READING NEXT CLIENT");
 		    sv_process_read(key,sc);
 		}
 	    }
@@ -113,14 +115,15 @@ public class ChatServer
 
     /**
      *
-     * currently need handling of /priv command.
+     * Process next readable ready client
      *
      **/
     static private void sv_process_read(SelectionKey key, SocketChannel sc) throws Exception
     {
 	User user = (User)key.attachment();
 	String msg = get_soc_message(sc);
-
+	System.out.println("RECEIVED: " + (msg == null ? "NULL" : msg));
+	
 	// user closed connection ?
 	if(msg == null)
 	{
@@ -137,7 +140,8 @@ public class ChatServer
 
 	msg = user.getFullMessage().replace("\n","");
 	String[] msg_tokens = msg.split(" ");
-
+	System.out.println("PROCESSING FULL REQUEST: " + msg);
+	
 	switch(user.getState())
 	{
 	case INIT:
@@ -371,7 +375,7 @@ public class ChatServer
      **/
     static private void close_connection(SelectionKey key, SocketChannel sc) throws Exception
     {
-	System.out.println("CONNECTION CLOSED"); // debug
+	System.out.println("CONNECTION TO CLIENT CLOSED"); // debug
 	key.cancel();
 	sc.socket().close();
     }

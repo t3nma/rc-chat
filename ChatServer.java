@@ -8,10 +8,6 @@ import java.util.*;
 public class ChatServer
 {
     static final private int BUFFER_SIZE             = 20000;
-
-    static final public String ANS_OK               = "OK\n";
-    static final public String ANS_ERROR            = "ERROR\n";
-    static final public String ANS_BYE              = "BYE\n";
     
     static final private String ANS_PATTERN_MESSAGE = "MESSAGE [name] [message]\n";
     static final private String ANS_PATTERN_NEWNICK = "NEWNICK [old] [new]\n";
@@ -149,22 +145,22 @@ public class ChatServer
 	    if( msg_tokens[0].equals("/nick") && msg_tokens.length > 1 )
 	    {
 		if(nameset.contains(msg_tokens[1]))
-		    sv_answer(ANS_ERROR, sc);
+		    sv_answer(Common.ANS_ERROR, sc);
 		else
 		{
 		    nameset.add(msg_tokens[1]);
 		    user.setName(msg_tokens[1]);
 		    user.setState(User.State.OUTSIDE);
-		    sv_answer(ANS_OK, sc);
+		    sv_answer(Common.ANS_OK, sc);
 		}
 	    }
 	    else if( msg_tokens[0].equals("/bye") )
 	    {	
-		sv_answer(ANS_BYE, sc);
+		sv_answer(Common.ANS_BYE, sc);
 		close_connection(key,sc);
 	    }
 	    else
-		sv_answer(ANS_ERROR, sc);
+		sv_answer(Common.ANS_ERROR, sc);
 	    
 	    break;
 	case OUTSIDE:
@@ -172,13 +168,13 @@ public class ChatServer
 	    if( msg_tokens[0].equals("/nick") && msg_tokens.length > 1 )
 	    {
 		if(nameset.contains(msg_tokens[1]))
-		    sv_answer(ANS_ERROR, sc);
+		    sv_answer(Common.ANS_ERROR, sc);
 		else
 		{
 		    nameset.add(msg_tokens[1]);
 		    nameset.remove(user.getName());
 		    user.setName(msg_tokens[1]);
-		    sv_answer(ANS_OK, sc);
+		    sv_answer(Common.ANS_OK, sc);
 		}
 	    }
 	    else if( msg_tokens[0].equals("/join") && msg_tokens.length > 1 )
@@ -187,30 +183,30 @@ public class ChatServer
 		sv_answer_room(msg_tokens[1], room_msg, user.getName(), false);
 		user.setRoom(msg_tokens[1]);
 		user.setState(User.State.INSIDE);
-		sv_answer(ANS_OK, sc);
+		sv_answer(Common.ANS_OK, sc);
 	    }
 	    else if( msg_tokens[0].equals("/priv") && msg_tokens.length > 2 )
 	    {
 		String receiver = msg_tokens[1];
 		
 		if( !nameset.contains(receiver) )
-		    sv_answer(ANS_ERROR, sc); // receiver doesn't exist, throw error to sender
+		    sv_answer(Common.ANS_ERROR, sc); // receiver doesn't exist, throw error to sender
 		else
 		{
 		    msg = msg.substring(msg.indexOf(msg_tokens[2]));
 		    String priv_msg = ANS_PATTERN_PRIVATE.replace("[name]", user.getName()).replace("[message]", msg);
 		    sv_answer_priv(priv_msg, receiver);
-		    sv_answer(ANS_OK, sc);
+		    sv_answer(Common.ANS_OK, sc);
 		}
 	    }
 	    else if( msg_tokens[0].equals("/bye") )
 	    {
-		sv_answer(ANS_BYE, sc);
+		sv_answer(Common.ANS_BYE, sc);
 		nameset.remove(user.getName());
 		close_connection(key,sc);
 	    }
 	    else
-		sv_answer(ANS_ERROR, sc);
+		sv_answer(Common.ANS_ERROR, sc);
 	    
 	    break;
 	case INSIDE:
@@ -218,12 +214,12 @@ public class ChatServer
 	    if( msg_tokens[0].equals("/nick") && msg_tokens.length > 1 )
 	    {
 		if(nameset.contains(msg_tokens[1]))
-		    sv_answer(ANS_ERROR, sc);
+		    sv_answer(Common.ANS_ERROR, sc);
 		else
 		{
 		    String room_msg = ANS_PATTERN_NEWNICK.replace("[old]",user.getName()).replace("[new]",msg_tokens[1]);
 		    sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
-		    sv_answer(ANS_OK, sc);
+		    sv_answer(Common.ANS_OK, sc);
 		    nameset.remove(user.getName());
 		    nameset.add(msg_tokens[1]);
 		    user.setName(msg_tokens[1]);
@@ -236,20 +232,20 @@ public class ChatServer
 		user.setRoom(msg_tokens[1]);
 		room_msg = ANS_PATTERN_JOINED.replace("[name]", user.getName());
 		sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
-		sv_answer(ANS_OK, sc);
+		sv_answer(Common.ANS_OK, sc);
 	    }
 	    else if( msg_tokens[0].equals("/priv") && msg_tokens.length > 2)
 	    {
 		String receiver = msg_tokens[1];
 		
 		if( !nameset.contains(receiver) )
-		    sv_answer(ANS_ERROR, sc); // receiver doesn't exist, throw error to sender
+		    sv_answer(Common.ANS_ERROR, sc); // receiver doesn't exist, throw error to sender
 		else
 		{
 		    msg = msg.substring(msg.indexOf(msg_tokens[2]));
 		    String priv_msg = ANS_PATTERN_PRIVATE.replace("[name]", user.getName()).replace("[message]", msg);
 		    sv_answer_priv(priv_msg, receiver);
-		    sv_answer(ANS_OK, sc);
+		    sv_answer(Common.ANS_OK, sc);
 		}
 	    }
 	    else if( msg_tokens[0].equals("/leave") )
@@ -257,13 +253,13 @@ public class ChatServer
 		String room_msg = ANS_PATTERN_LEFT.replace("[name]", user.getName());
 		sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
 		user.setState(User.State.OUTSIDE);
-		sv_answer(ANS_OK, sc);
+		sv_answer(Common.ANS_OK, sc);
 	    }
 	    else if( msg_tokens[0].equals("/bye") )
 	    {
 		String room_msg = ANS_PATTERN_LEFT.replace("[name]", user.getName());
 		sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
-		sv_answer(ANS_BYE, sc);
+		sv_answer(Common.ANS_BYE, sc);
 		nameset.remove(user.getName());
 		close_connection(key, sc);
 	    }
@@ -278,7 +274,7 @@ public class ChatServer
 	    
 	    break;
 	default:
-	    sv_answer(ANS_ERROR, sc);
+	    sv_answer(Common.ANS_ERROR, sc);
 	}	
     }
     

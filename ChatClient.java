@@ -115,7 +115,7 @@ public class ChatClient
 		    String msg = inFromServer.readLine() + "\n"; // readLine() removes end of line
 		    System.out.println("RECEIVED: " + msg);
 		    
-		    if(msg.equals(ChatServer.ANS_BYE))
+		    if(msg.equals(Common.ANS_BYE))
 			alive = false;
 		    
 		    printMessage(msg);

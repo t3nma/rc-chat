@@ -263,7 +263,7 @@ public class ChatServer
 		nameset.remove(user.getName());
 		close_connection(key, sc);
 	    }
-	    else
+	    else if( !msg_tokens[0].matches("/[^/]*") )
 	    {
 		if(msg.startsWith("//"))
 		    msg = msg.substring(1); // escape first /
@@ -271,6 +271,8 @@ public class ChatServer
 		String room_msg = ANS_PATTERN_MESSAGE.replace("[name]", user.getName()).replace("[message]", msg);
 		sv_answer_room(user.getRoom(), room_msg, user.getName(), true);
 	    }
+	    else
+		sv_answer(Common.ANS_ERROR, sc);
 	    
 	    break;
 	default:

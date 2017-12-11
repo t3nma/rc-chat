@@ -134,150 +134,157 @@ public class ChatServer
 	if(!msg.endsWith("\n"))
 	    return;
 
-	msg = user.getFullMessage().replace("\n","");
-	String[] msg_tokens = msg.split(" ");
-	System.out.println("PROCESSING FULL REQUEST: " + msg);
+	String fullMessage = user.getFullMessage();
+	String[] lines = fullMessage.split("\n");
+	System.out.println("PROCESSING FULL REQUEST: " + fullMessage);
 	
-	switch(user.getState())
+	for(int i=0; i!=lines.length; ++i)
 	{
-	case INIT:
-	    
-	    if( msg_tokens[0].equals("/nick") && msg_tokens.length > 1 )
+	    //msg = msg.replace("\n","");
+	    msg = lines[i];
+	    String[] msg_tokens = msg.split(" ");
+	
+	    switch(user.getState())
 	    {
-		if(nameset.contains(msg_tokens[1]))
-		    sv_answer(Common.ANS_ERROR, sc);
-		else
+	    case INIT:
+	    
+		if( msg_tokens[0].equals("/nick") && msg_tokens.length == 2 )
 		{
-		    nameset.add(msg_tokens[1]);
-		    user.setName(msg_tokens[1]);
+		    if(nameset.contains(msg_tokens[1]))
+			sv_answer(Common.ANS_ERROR, sc);
+		    else
+		    {
+			nameset.add(msg_tokens[1]);
+			user.setName(msg_tokens[1]);
+			user.setState(User.State.OUTSIDE);
+			sv_answer(Common.ANS_OK, sc);
+		    }
+		}
+		else if( msg_tokens[0].equals("/bye") )
+		{	
+		    sv_answer(Common.ANS_BYE, sc);
+		    close_connection(key,sc);
+		}
+		else
+		    sv_answer(Common.ANS_ERROR, sc);
+		
+		break;
+	    case OUTSIDE:
+		
+		if( msg_tokens[0].equals("/nick") && msg_tokens.length == 2 )
+		{
+		    if(nameset.contains(msg_tokens[1]))
+			sv_answer(Common.ANS_ERROR, sc);
+		    else
+		    {
+			nameset.add(msg_tokens[1]);
+			nameset.remove(user.getName());
+			user.setName(msg_tokens[1]);
+			sv_answer(Common.ANS_OK, sc);
+		    }
+		}
+		else if( msg_tokens[0].equals("/join") && msg_tokens.length == 2 )
+		{
+		    String room_msg = ANS_PATTERN_JOINED.replace("[name]",user.getName());
+		    sv_answer_room(msg_tokens[1], room_msg, user.getName(), false);
+		    user.setRoom(msg_tokens[1]);
+		    user.setState(User.State.INSIDE);
+		    sv_answer(Common.ANS_OK, sc);
+		}
+		else if( msg_tokens[0].equals("/priv") && msg_tokens.length > 2 )
+		{
+		    String receiver = msg_tokens[1];
+		    
+		    if( !nameset.contains(receiver) )
+			sv_answer(Common.ANS_ERROR, sc); // receiver doesn't exist, throw error to sender
+		    else
+		    {
+			msg = msg.substring(msg.indexOf(msg_tokens[2]));
+			String priv_msg = ANS_PATTERN_PRIVATE.replace("[name]", user.getName()).replace("[message]", msg);
+			sv_answer_priv(priv_msg, receiver);
+			sv_answer(Common.ANS_OK, sc);
+		    }
+		}
+		else if( msg_tokens[0].equals("/bye") )
+		{
+		    sv_answer(Common.ANS_BYE, sc);
+		    nameset.remove(user.getName());
+		    close_connection(key,sc);
+		}
+		else
+		    sv_answer(Common.ANS_ERROR, sc);
+		
+		break;
+	    case INSIDE:
+		
+		if( msg_tokens[0].equals("/nick") && msg_tokens.length == 2 )
+		{
+		    if(nameset.contains(msg_tokens[1]))
+			sv_answer(Common.ANS_ERROR, sc);
+		    else
+		    {
+			String room_msg = ANS_PATTERN_NEWNICK.replace("[old]",user.getName()).replace("[new]",msg_tokens[1]);
+			sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
+			sv_answer(Common.ANS_OK, sc);
+			nameset.remove(user.getName());
+			nameset.add(msg_tokens[1]);
+			user.setName(msg_tokens[1]);
+		    }
+		}
+		else if( msg_tokens[0].equals("/join") && msg_tokens.length == 2 )
+		{
+		    String room_msg = ANS_PATTERN_LEFT.replace("[name]", user.getName());
+		    sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
+		    user.setRoom(msg_tokens[1]);
+		    room_msg = ANS_PATTERN_JOINED.replace("[name]", user.getName());
+		    sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
+		    sv_answer(Common.ANS_OK, sc);
+		}
+		else if( msg_tokens[0].equals("/priv") && msg_tokens.length > 2)
+		{
+		    String receiver = msg_tokens[1];
+		    
+		    if( !nameset.contains(receiver) )
+			sv_answer(Common.ANS_ERROR, sc); // receiver doesn't exist, throw error to sender
+		    else
+			{
+			    msg = msg.substring(msg.indexOf(msg_tokens[2]));
+			    String priv_msg = ANS_PATTERN_PRIVATE.replace("[name]", user.getName()).replace("[message]", msg);
+			    sv_answer_priv(priv_msg, receiver);
+			    sv_answer(Common.ANS_OK, sc);
+			}
+		}
+		else if( msg_tokens[0].equals("/leave") )
+		{
+		    String room_msg = ANS_PATTERN_LEFT.replace("[name]", user.getName());
+		    sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
 		    user.setState(User.State.OUTSIDE);
 		    sv_answer(Common.ANS_OK, sc);
 		}
-	    }
-	    else if( msg_tokens[0].equals("/bye") )
-	    {	
-		sv_answer(Common.ANS_BYE, sc);
-		close_connection(key,sc);
-	    }
-	    else
-		sv_answer(Common.ANS_ERROR, sc);
-	    
-	    break;
-	case OUTSIDE:
-
-	    if( msg_tokens[0].equals("/nick") && msg_tokens.length > 1 )
-	    {
-		if(nameset.contains(msg_tokens[1]))
-		    sv_answer(Common.ANS_ERROR, sc);
-		else
+		else if( msg_tokens[0].equals("/bye") )
 		{
-		    nameset.add(msg_tokens[1]);
-		    nameset.remove(user.getName());
-		    user.setName(msg_tokens[1]);
-		    sv_answer(Common.ANS_OK, sc);
-		}
-	    }
-	    else if( msg_tokens[0].equals("/join") && msg_tokens.length > 1 )
-	    {
-		String room_msg = ANS_PATTERN_JOINED.replace("[name]",user.getName());
-		sv_answer_room(msg_tokens[1], room_msg, user.getName(), false);
-		user.setRoom(msg_tokens[1]);
-		user.setState(User.State.INSIDE);
-		sv_answer(Common.ANS_OK, sc);
-	    }
-	    else if( msg_tokens[0].equals("/priv") && msg_tokens.length > 2 )
-	    {
-		String receiver = msg_tokens[1];
-		
-		if( !nameset.contains(receiver) )
-		    sv_answer(Common.ANS_ERROR, sc); // receiver doesn't exist, throw error to sender
-		else
-		{
-		    msg = msg.substring(msg.indexOf(msg_tokens[2]));
-		    String priv_msg = ANS_PATTERN_PRIVATE.replace("[name]", user.getName()).replace("[message]", msg);
-		    sv_answer_priv(priv_msg, receiver);
-		    sv_answer(Common.ANS_OK, sc);
-		}
-	    }
-	    else if( msg_tokens[0].equals("/bye") )
-	    {
-		sv_answer(Common.ANS_BYE, sc);
-		nameset.remove(user.getName());
-		close_connection(key,sc);
-	    }
-	    else
-		sv_answer(Common.ANS_ERROR, sc);
-	    
-	    break;
-	case INSIDE:
-
-	    if( msg_tokens[0].equals("/nick") && msg_tokens.length > 1 )
-	    {
-		if(nameset.contains(msg_tokens[1]))
-		    sv_answer(Common.ANS_ERROR, sc);
-		else
-		{
-		    String room_msg = ANS_PATTERN_NEWNICK.replace("[old]",user.getName()).replace("[new]",msg_tokens[1]);
+		    String room_msg = ANS_PATTERN_LEFT.replace("[name]", user.getName());
 		    sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
-		    sv_answer(Common.ANS_OK, sc);
+		    sv_answer(Common.ANS_BYE, sc);
 		    nameset.remove(user.getName());
-		    nameset.add(msg_tokens[1]);
-		    user.setName(msg_tokens[1]);
+		    close_connection(key, sc);
 		}
-	    }
-	    else if( msg_tokens[0].equals("/join") && msg_tokens.length > 1 )
-	    {
-		String room_msg = ANS_PATTERN_LEFT.replace("[name]", user.getName());
-		sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
-		user.setRoom(msg_tokens[1]);
-		room_msg = ANS_PATTERN_JOINED.replace("[name]", user.getName());
-		sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
-		sv_answer(Common.ANS_OK, sc);
-	    }
-	    else if( msg_tokens[0].equals("/priv") && msg_tokens.length > 2)
-	    {
-		String receiver = msg_tokens[1];
-		
-		if( !nameset.contains(receiver) )
-		    sv_answer(Common.ANS_ERROR, sc); // receiver doesn't exist, throw error to sender
-		else
+		else if( !msg_tokens[0].matches("/[^/]*") )
 		{
-		    msg = msg.substring(msg.indexOf(msg_tokens[2]));
-		    String priv_msg = ANS_PATTERN_PRIVATE.replace("[name]", user.getName()).replace("[message]", msg);
-		    sv_answer_priv(priv_msg, receiver);
-		    sv_answer(Common.ANS_OK, sc);
+		    if(msg.startsWith("//"))
+			msg = msg.substring(1); // escape first /
+		    
+		    String room_msg = ANS_PATTERN_MESSAGE.replace("[name]", user.getName()).replace("[message]", msg);
+		    sv_answer_room(user.getRoom(), room_msg, user.getName(), true);
 		}
-	    }
-	    else if( msg_tokens[0].equals("/leave") )
-	    {
-		String room_msg = ANS_PATTERN_LEFT.replace("[name]", user.getName());
-		sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
-		user.setState(User.State.OUTSIDE);
-		sv_answer(Common.ANS_OK, sc);
-	    }
-	    else if( msg_tokens[0].equals("/bye") )
-	    {
-		String room_msg = ANS_PATTERN_LEFT.replace("[name]", user.getName());
-		sv_answer_room(user.getRoom(), room_msg, user.getName(), false);
-		sv_answer(Common.ANS_BYE, sc);
-		nameset.remove(user.getName());
-		close_connection(key, sc);
-	    }
-	    else if( !msg_tokens[0].matches("/[^/]*") )
-	    {
-		if(msg.startsWith("//"))
-		    msg = msg.substring(1); // escape first /
-
-		String room_msg = ANS_PATTERN_MESSAGE.replace("[name]", user.getName()).replace("[message]", msg);
-		sv_answer_room(user.getRoom(), room_msg, user.getName(), true);
-	    }
-	    else
+		else
+		    sv_answer(Common.ANS_ERROR, sc);
+		
+		break;
+	    default:
 		sv_answer(Common.ANS_ERROR, sc);
-	    
-	    break;
-	default:
-	    sv_answer(Common.ANS_ERROR, sc);
-	}	
+	    }
+	}
     }
     
     /**

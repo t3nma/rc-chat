@@ -30,7 +30,7 @@
 ## General
 
 - [X] Fix UTF-8
-- [ ] Fix pretty output, be careful with substringing and stuff
+- [X] Fix pretty output, be careful with substringing and stuff
 - [ ] Test message deliniation with ncat
 - [ ] Use wireshark to test protocol correctness
 

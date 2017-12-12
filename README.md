@@ -1,4 +1,3 @@
 # rc-chat
 
-A simple Java chat Client and Server (multiplex model).
-This project is the assignment for "Network and Communications" course and uses Java's NIO API for the Server implementation.
+Assignment for the "Network and Communications" course, implementation of a simple Java chat Client and Server. The Server follows the multiplex model and is implemented using Java's NIO API.
